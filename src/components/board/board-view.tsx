@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import type { Project, TaskWithAssignee, Profile, MemberRole } from '@/types'
 import { BOARD_COLUMNS } from '@/lib/constants'
 import { moveTask, deleteTask } from '@/actions/tasks'
+import { useRealtimeTasks } from '@/hooks/use-realtime-tasks'
 import { CreateTaskDialog } from '@/components/board/create-task-dialog'
 import { TaskDetailSheet } from '@/components/board/task-detail-sheet'
 import { BoardColumn } from '@/components/board/board-column'
@@ -29,6 +30,9 @@ export function BoardView({ project, tasks: initialTasks, members, currentUserId
   const [selectedTask, setSelectedTask] = useState<TaskWithAssignee | null>(null)
   const [, startTransition] = useTransition()
 
+  // Live updates from teammates
+  useRealtimeTasks(project.id, setTasks, tasks)
+
   function getColumnTasks(status: TaskStatus) {
     return tasks.filter(t => t.status === status)
   }
@@ -38,6 +42,7 @@ export function BoardView({ project, tasks: initialTasks, members, currentUserId
     if (!task || task.status === newStatus) return
 
     const newPosition = getColumnTasks(newStatus).length
+    // Optimistic update — instant UI response
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus, position: newPosition } : t))
 
     startTransition(async () => {
@@ -47,6 +52,7 @@ export function BoardView({ project, tasks: initialTasks, members, currentUserId
   }
 
   async function handleDelete(taskId: string) {
+    // Optimistic update — card disappears instantly
     setTasks(prev => prev.filter(t => t.id !== taskId))
     startTransition(async () => {
       const result = await deleteTask(taskId, project.id)
