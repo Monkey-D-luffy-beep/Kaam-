@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { resetPassword } from '@/actions/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export function ResetPasswordForm() {
   const [state, action, pending] = useActionState(resetPassword, undefined)
+  const expired = useSearchParams().get('expired')
 
   if (state?.success) {
     return (
@@ -20,6 +22,11 @@ export function ResetPasswordForm() {
 
   return (
     <form action={action} className="space-y-4">
+      {expired && (
+        <Alert variant="destructive">
+          <AlertDescription>That link has expired. Enter your email to get a fresh one.</AlertDescription>
+        </Alert>
+      )}
       {state && !state.success && (
         <Alert variant="destructive">
           <AlertDescription>{state.message}</AlertDescription>

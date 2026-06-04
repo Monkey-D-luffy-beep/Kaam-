@@ -399,7 +399,7 @@ export function LandingShowcase() {
         >
           <p className="text-[12px] font-semibold tracking-[0.12em] uppercase text-[#888] mb-4">The product</p>
           <h2 className="text-[40px] sm:text-[52px] font-bold tracking-[-0.03em] text-[#111] leading-[1.1] max-w-xl">
-            Everything your team needs. Nothing it doesn&apos;t.
+            Everything your team needs.
           </h2>
         </motion.div>
 

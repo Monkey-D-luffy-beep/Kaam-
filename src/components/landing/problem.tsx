@@ -153,8 +153,7 @@ export function LandingProblem() {
           >
             <p className="text-[12px] font-semibold tracking-[0.12em] uppercase text-white/40 mb-3">What Kaam does</p>
             <h3 className="text-[32px] sm:text-[40px] font-bold tracking-[-0.03em] text-white leading-tight">
-              Everything your team needs.<br />
-              <span className="text-[#818CF8]">Nothing you don&apos;t.</span>
+              Everything your team needs.
             </h3>
           </motion.div>
 
