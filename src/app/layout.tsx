@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Geist } from 'next/font/google'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { RecoveryHandler } from '@/components/auth/recovery-handler'
 import './globals.css'
 
 const geist = Geist({
@@ -33,6 +34,7 @@ export default function RootLayout({
     <html lang="en" className={`${geist.variable} h-full antialiased`}>
       <body className="h-full bg-background text-foreground">
         <TooltipProvider delay={200}>
+          <RecoveryHandler />
           {children}
           <Toaster richColors position="bottom-right" />
         </TooltipProvider>
