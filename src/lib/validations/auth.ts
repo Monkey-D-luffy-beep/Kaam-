@@ -3,6 +3,12 @@ import { z } from 'zod'
 export const SignUpSchema = z.object({
   full_name: z.string().min(2, { error: 'Name must be at least 2 characters.' }).trim(),
   email: z.email({ error: 'Please enter a valid email address.' }).trim(),
+  phone: z
+    .string()
+    .min(7, { error: 'Enter a valid phone number.' })
+    .max(20, { error: 'Phone number is too long.' })
+    .regex(/^[+\d\s\-()]+$/, { error: 'Enter a valid phone number.' })
+    .trim(),
   password: z
     .string()
     .min(8, { error: 'Password must be at least 8 characters.' })

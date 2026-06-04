@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 import type { Profile } from '@/types'
@@ -42,9 +43,7 @@ export function AppSidebar({ user, profile }: AppSidebarProps) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" render={<Link href={ROUTES.dashboard} />}>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground text-background">
-                <span className="text-sm font-bold">K</span>
-              </div>
+              <Image src="/3.svg" alt="Kaam" width={32} height={32} className="h-8 w-8 rounded-lg shrink-0" />
               <div className="flex flex-col gap-0.5 leading-none">
                 <span className="font-semibold">Kaam</span>
                 <span className="text-xs text-muted-foreground">Workspace</span>

@@ -15,6 +15,13 @@ export const metadata: Metadata = {
     template: '%s | Kaam',
   },
   description: 'The project management tool that people actually enjoy using.',
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
 }
 
 export default function RootLayout({

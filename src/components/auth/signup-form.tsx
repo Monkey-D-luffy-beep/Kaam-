@@ -29,47 +29,36 @@ export function SignUpForm() {
 
       <div className="space-y-1.5">
         <Label htmlFor="full_name">Full name</Label>
-        <Input
-          id="full_name"
-          name="full_name"
-          type="text"
-          placeholder="Alex Johnson"
-          autoComplete="name"
-          required
-        />
-        {errors?.full_name && (
-          <p className="text-xs text-destructive">{errors.full_name[0]}</p>
-        )}
+        <Input id="full_name" name="full_name" type="text" placeholder="Alex Johnson" autoComplete="name" required />
+        {errors?.full_name && <p className="text-xs text-destructive">{errors.full_name[0]}</p>}
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">Work email</Label>
+        <Input id="email" name="email" type="email" placeholder="you@company.com" autoComplete="email" required />
+        {errors?.email && <p className="text-xs text-destructive">{errors.email[0]}</p>}
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="phone">
+          Phone number
+          <span className="ml-1.5 text-xs text-muted-foreground font-normal">— we may reach out to help you get started</span>
+        </Label>
         <Input
-          id="email"
-          name="email"
-          type="email"
-          placeholder="you@example.com"
-          autoComplete="email"
+          id="phone"
+          name="phone"
+          type="tel"
+          placeholder="+91 98765 43210"
+          autoComplete="tel"
           required
         />
-        {errors?.email && (
-          <p className="text-xs text-destructive">{errors.email[0]}</p>
-        )}
+        {errors?.phone && <p className="text-xs text-destructive">{errors.phone[0]}</p>}
       </div>
 
       <div className="space-y-1.5">
         <Label htmlFor="password">Password</Label>
-        <Input
-          id="password"
-          name="password"
-          type="password"
-          placeholder="Min. 8 characters"
-          autoComplete="new-password"
-          required
-        />
-        {errors?.password && (
-          <p className="text-xs text-destructive">{errors.password[0]}</p>
-        )}
+        <Input id="password" name="password" type="password" placeholder="Min. 8 characters" autoComplete="new-password" required />
+        {errors?.password && <p className="text-xs text-destructive">{errors.password[0]}</p>}
       </div>
 
       <Button type="submit" className="w-full" disabled={pending}>

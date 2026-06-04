@@ -14,6 +14,7 @@ export async function signUp(
   const parsed = SignUpSchema.safeParse({
     full_name: formData.get('full_name'),
     email: formData.get('email'),
+    phone: formData.get('phone'),
     password: formData.get('password'),
   })
 
@@ -25,17 +26,24 @@ export async function signUp(
     }
   }
 
-  const { full_name, email, password } = parsed.data
+  const { full_name, email, phone, password } = parsed.data
   const supabase = await createClient()
 
-  const { error } = await supabase.auth.signUp({
+  const { data: authData, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: { full_name },
+      data: { full_name, phone },
       emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/callback`,
     },
   })
+
+  // Store phone in profiles table immediately
+  if (!error && authData.user) {
+    await supabase
+      .from('profiles')
+      .upsert({ id: authData.user.id, email, full_name, phone }, { onConflict: 'id', ignoreDuplicates: false })
+  }
 
   if (error) {
     return { success: false, message: error.message }
