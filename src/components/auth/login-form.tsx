@@ -7,12 +7,23 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { GoogleAuthButton } from './google-auth-button'
 
 export function LoginForm() {
   const [state, action, pending] = useActionState(signIn, undefined)
   const errors = state && !state.success ? state.errors : undefined
 
   return (
+    <div className="space-y-4">
+      <GoogleAuthButton mode="sign-in" />
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">or</span>
+        </div>
+      </div>
     <form action={action} className="space-y-4">
       {state && !state.success && (
         <Alert variant="destructive">
@@ -62,5 +73,6 @@ export function LoginForm() {
         {pending ? 'Signing in…' : 'Sign in'}
       </Button>
     </form>
+    </div>
   )
 }
