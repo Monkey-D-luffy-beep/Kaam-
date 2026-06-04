@@ -1,4 +1,3 @@
-import { PagePreloader } from '@/components/landing/page-preloader'
 import { LandingNav } from '@/components/landing/nav'
 import { LandingHero } from '@/components/landing/hero'
 import { LandingProblem } from '@/components/landing/problem'
@@ -13,7 +12,6 @@ import { LandingFooter } from '@/components/landing/footer'
 export default function LandingPage() {
   return (
     <>
-      <PagePreloader />
       <div className="min-h-screen" style={{ backgroundColor: '#FAFAF8', color: '#111111' }}>
         <LandingNav />
         <LandingHero />
