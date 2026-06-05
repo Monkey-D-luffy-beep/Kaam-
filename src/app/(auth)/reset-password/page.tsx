@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { ResetPasswordForm } from '@/components/auth/reset-password-form'
 
 export const metadata: Metadata = { title: 'Reset Password' }
@@ -13,7 +14,9 @@ export default function ResetPasswordPage() {
           Enter your email and we&apos;ll send you a reset link
         </p>
       </div>
-      <ResetPasswordForm />
+      <Suspense>
+        <ResetPasswordForm />
+      </Suspense>
       <p className="mt-4 text-center text-sm text-muted-foreground">
         Remembered it?{' '}
         <Link href="/login" className="font-medium text-foreground underline underline-offset-4 hover:text-primary">

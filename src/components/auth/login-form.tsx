@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { signIn } from '@/actions/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,9 +13,15 @@ import { GoogleAuthButton } from './google-auth-button'
 export function LoginForm() {
   const [state, action, pending] = useActionState(signIn, undefined)
   const errors = state && !state.success ? state.errors : undefined
+  const oauthError = useSearchParams().get('error')
 
   return (
     <div className="space-y-4">
+      {oauthError === 'oauth_retry' && (
+        <Alert variant="destructive">
+          <AlertDescription>Google sign-in failed — please try again.</AlertDescription>
+        </Alert>
+      )}
       <GoogleAuthButton mode="sign-in" />
       <div className="relative">
         <div className="absolute inset-0 flex items-center">

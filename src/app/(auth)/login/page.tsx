@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { LoginForm } from '@/components/auth/login-form'
 
 export const metadata: Metadata = { title: 'Sign In' }
@@ -13,7 +14,9 @@ export default function LoginPage() {
           Sign in to your Kaam account
         </p>
       </div>
-      <LoginForm />
+      <Suspense>
+        <LoginForm />
+      </Suspense>
       <p className="mt-4 text-center text-sm text-muted-foreground">
         Don&apos;t have an account?{' '}
         <Link href="/signup" className="font-medium text-foreground underline underline-offset-4 hover:text-primary">
