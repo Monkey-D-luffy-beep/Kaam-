@@ -7,22 +7,22 @@ export const metadata: Metadata = { title: 'Reset Password' }
 
 export default function ResetPasswordPage() {
   return (
-    <div className="w-full max-w-sm">
-      <div className="mb-6 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">Reset your password</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+    <>
+      <div className="mb-7">
+        <h1 className="text-[22px] font-semibold tracking-tight text-[#111]">Reset your password</h1>
+        <p className="mt-1 text-sm text-[#888]">
           Enter your email and we&apos;ll send you a reset link
         </p>
       </div>
       <Suspense>
         <ResetPasswordForm />
       </Suspense>
-      <p className="mt-4 text-center text-sm text-muted-foreground">
+      <p className="mt-5 text-center text-sm text-[#888]">
         Remembered it?{' '}
-        <Link href="/login" className="font-medium text-foreground underline underline-offset-4 hover:text-primary">
+        <Link href="/login" className="font-medium text-[#111] underline underline-offset-4 hover:text-[#4F46E5] transition-colors">
           Sign in
         </Link>
       </p>
-    </div>
+    </>
   )
 }

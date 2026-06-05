@@ -23,12 +23,12 @@ export function LoginForm() {
         </Alert>
       )}
       <GoogleAuthButton mode="sign-in" />
-      <div className="relative">
+      <div className="relative my-1">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
+          <span className="w-full border-t border-[#E5E5E5]" />
         </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">or</span>
+        <div className="relative flex justify-center text-xs">
+          <span className="bg-white px-3 text-[#AAA] uppercase tracking-widest">or</span>
         </div>
       </div>
     <form action={action} className="space-y-4">
@@ -76,7 +76,7 @@ export function LoginForm() {
         )}
       </div>
 
-      <Button type="submit" className="w-full" disabled={pending}>
+      <Button type="submit" className="w-full bg-[#4F46E5] hover:bg-[#4338CA] text-white font-medium" disabled={pending}>
         {pending ? 'Signing in…' : 'Sign in'}
       </Button>
     </form>
