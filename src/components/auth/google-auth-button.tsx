@@ -1,21 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
 
 export function GoogleAuthButton({ mode = 'sign-in' }: { mode?: 'sign-in' | 'sign-up' }) {
   const [loading, setLoading] = useState(false)
 
-  async function handleGoogleAuth() {
+  function handleGoogleAuth() {
     setLoading(true)
-    const supabase = createClient()
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/api/auth/callback`,
-      },
-    })
+    window.location.href = '/api/auth/google'
   }
 
   return (
