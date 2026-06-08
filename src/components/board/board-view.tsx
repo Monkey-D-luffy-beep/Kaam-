@@ -5,7 +5,6 @@ import type { Project, TaskWithAssignee, Profile, MemberRole } from '@/types'
 import { BOARD_COLUMNS } from '@/lib/constants'
 import { moveTask, deleteTask } from '@/actions/tasks'
 import { useRealtimeTasks } from '@/hooks/use-realtime-tasks'
-import { CreateTaskDialog } from '@/components/board/create-task-dialog'
 import { TaskDetailSheet } from '@/components/board/task-detail-sheet'
 import { BoardColumn } from '@/components/board/board-column'
 import { toast } from 'sonner'
@@ -26,11 +25,9 @@ interface BoardViewProps {
 
 export function BoardView({ project, tasks: initialTasks, members, currentUserId }: BoardViewProps) {
   const [tasks, setTasks] = useState(initialTasks)
-  const [createDialogStatus, setCreateDialogStatus] = useState<TaskStatus | null>(null)
   const [selectedTask, setSelectedTask] = useState<TaskWithAssignee | null>(null)
   const [, startTransition] = useTransition()
 
-  // Live updates from teammates
   useRealtimeTasks(project.id, setTasks, tasks)
 
   function getColumnTasks(status: TaskStatus) {
@@ -42,7 +39,6 @@ export function BoardView({ project, tasks: initialTasks, members, currentUserId
     if (!task || task.status === newStatus) return
 
     const newPosition = getColumnTasks(newStatus).length
-    // Optimistic update — instant UI response
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus, position: newPosition } : t))
 
     startTransition(async () => {
@@ -52,7 +48,6 @@ export function BoardView({ project, tasks: initialTasks, members, currentUserId
   }
 
   async function handleDelete(taskId: string) {
-    // Optimistic update — card disappears instantly
     setTasks(prev => prev.filter(t => t.id !== taskId))
     startTransition(async () => {
       const result = await deleteTask(taskId, project.id)
@@ -68,22 +63,12 @@ export function BoardView({ project, tasks: initialTasks, members, currentUserId
           key={col.id}
           column={col}
           tasks={getColumnTasks(col.id)}
+          projectId={project.id}
           onTaskClick={setSelectedTask}
           onMove={handleMove}
           onDelete={handleDelete}
-          onAddTask={() => setCreateDialogStatus(col.id)}
         />
       ))}
-
-      {createDialogStatus && (
-        <CreateTaskDialog
-          open={true}
-          onOpenChange={open => !open && setCreateDialogStatus(null)}
-          projectId={project.id}
-          defaultStatus={createDialogStatus}
-          members={members}
-        />
-      )}
 
       {selectedTask && (
         <TaskDetailSheet
