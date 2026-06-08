@@ -98,6 +98,7 @@ export const ROUTES = {
   team: '/team',
   project: (id: string) => `/projects/${id}`,
   projectBoard: (id: string) => `/projects/${id}/board`,
+  projectTable: (id: string) => `/projects/${id}/table`,
   projectTimeline: (id: string) => `/projects/${id}/timeline`,
   projectWorkload: (id: string) => `/projects/${id}/workload`,
   projectSettings: (id: string) => `/projects/${id}/settings`,

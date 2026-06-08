@@ -12,11 +12,12 @@ import { Settings } from 'lucide-react'
 interface ProjectTabsProps {
   projectId: string
   projectName: string
-  active: 'board' | 'timeline' | 'workload' | 'settings'
+  active: 'board' | 'table' | 'timeline' | 'workload' | 'settings'
 }
 
 const TABS = [
-  { id: 'board', label: 'Board', href: (id: string) => ROUTES.projectBoard(id) },
+  { id: 'board',    label: 'Board',    href: (id: string) => ROUTES.projectBoard(id) },
+  { id: 'table',    label: 'Table',    href: (id: string) => ROUTES.projectTable(id) },
   { id: 'timeline', label: 'Timeline', href: (id: string) => ROUTES.projectTimeline(id) },
   { id: 'workload', label: 'Workload', href: (id: string) => ROUTES.projectWorkload(id) },
 ] as const
