@@ -1,5 +1,7 @@
 'use client'
 
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import type { TaskStatus, TaskWithAssignee } from '@/types'
 import { PRIORITY_CONFIG, BOARD_COLUMNS, APPROVAL_CONFIG } from '@/lib/constants'
 import { cn } from '@/lib/utils'
@@ -33,11 +35,23 @@ export function BoardCard({ task, onClick, onMove, onDelete }: BoardCardProps) {
   const isDueToday = dueDate && isToday(dueDate) && task.status !== 'done'
   const hasPendingApproval = task.approval_status === 'pending_approval'
 
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  }
+
   return (
     <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
       className={cn(
-        'group relative cursor-pointer rounded-lg border bg-card p-3 shadow-sm hover:shadow transition-shadow',
-        hasPendingApproval && 'border-amber-300 bg-amber-50/30'
+        'group relative cursor-grab active:cursor-grabbing rounded-lg border bg-card p-3 shadow-sm hover:shadow transition-shadow',
+        hasPendingApproval && 'border-amber-300 bg-amber-50/30',
+        isDragging && 'opacity-40'
       )}
       onClick={onClick}
     >

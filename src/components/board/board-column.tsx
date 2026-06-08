@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useTransition, useRef, useEffect } from 'react'
+import { useDroppable } from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import type { TaskStatus, TaskWithAssignee } from '@/types'
 import { cn } from '@/lib/utils'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -17,25 +19,28 @@ interface BoardColumnProps {
   onTaskClick: (task: TaskWithAssignee) => void
   onMove: (taskId: string, status: TaskStatus) => void
   onDelete: (taskId: string) => void
+  onTaskCreated: (task: Partial<TaskWithAssignee> & { id: string; title: string; status: TaskStatus }) => void
 }
 
-const COLUMN_STYLES: Record<TaskStatus, string> = {
-  todo: 'border-t-slate-400',
-  in_progress: 'border-t-blue-500',
-  done: 'border-t-green-500',
+const COLUMN_STYLES: Record<TaskStatus, { border: string; bg: string }> = {
+  todo:        { border: 'border-t-slate-400',  bg: '' },
+  in_progress: { border: 'border-t-blue-500',   bg: '' },
+  done:        { border: 'border-t-green-500',  bg: '' },
 }
 
 function InlineTaskCreate({
   projectId,
   status,
   onDone,
+  onCreated,
 }: {
   projectId: string
   status: TaskStatus
   onDone: () => void
+  onCreated: (task: Partial<TaskWithAssignee> & { id: string; title: string; status: TaskStatus }) => void
 }) {
   const [title, setTitle] = useState('')
-  const [, startTransition] = useTransition()
+  const [pending, startTransition] = useTransition()
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { inputRef.current?.focus() }, [])
@@ -43,14 +48,18 @@ function InlineTaskCreate({
   function submit() {
     const trimmed = title.trim()
     if (!trimmed) return
+    // Optimistic: show immediately with temp id
+    const tempId = `temp-${Date.now()}`
+    onCreated({ id: tempId, title: trimmed, status })
+    setTitle('')
     const fd = new FormData()
     fd.set('title', trimmed)
     fd.set('project_id', projectId)
     fd.set('status', status)
-    setTitle('')
     startTransition(async () => {
       const result = await createTask(undefined, fd)
-      if (!result.success) toast.error(result.message)
+      if (!result.success) toast.error(result.message ?? 'Failed to create task')
+      // Realtime will replace the temp task with the real one
     })
   }
 
@@ -68,7 +77,8 @@ function InlineTaskCreate({
         onKeyDown={handleKeyDown}
         onBlur={() => { if (!title.trim()) onDone() }}
         placeholder="Task name…"
-        className="w-full text-sm outline-none bg-transparent placeholder:text-muted-foreground"
+        disabled={pending}
+        className="w-full text-sm outline-none bg-transparent placeholder:text-muted-foreground disabled:opacity-50"
       />
       <p className="mt-1.5 text-[10px] text-muted-foreground select-none">
         ↵ to add · Esc to cancel
@@ -84,17 +94,20 @@ export function BoardColumn({
   onTaskClick,
   onMove,
   onDelete,
+  onTaskCreated,
 }: BoardColumnProps) {
   const [showCreate, setShowCreate] = useState(false)
+  const { setNodeRef, isOver } = useDroppable({ id: column.id })
 
   return (
     <div
       className={cn(
-        'flex w-72 shrink-0 flex-col rounded-xl border bg-muted/40 border-t-2',
-        COLUMN_STYLES[column.id]
+        'flex w-72 shrink-0 flex-col rounded-xl border bg-muted/40 border-t-2 transition-colors',
+        COLUMN_STYLES[column.id].border,
+        isOver && 'bg-muted/70 border-[#4F46E5]/30'
       )}
     >
-      {/* Column header */}
+      {/* Header */}
       <div className="flex items-center justify-between px-3 py-2.5">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">{column.label}</span>
@@ -112,27 +125,28 @@ export function BoardColumn({
       </div>
 
       <ScrollArea className="flex-1">
-        <div className="flex flex-col gap-2 p-2">
-          {tasks.map((task) => (
-            <BoardCard
-              key={task.id}
-              task={task}
-              onClick={() => onTaskClick(task)}
-              onMove={onMove}
-              onDelete={() => onDelete(task.id)}
-            />
-          ))}
+        <div ref={setNodeRef} className="flex flex-col gap-2 p-2 min-h-[40px]">
+          <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+            {tasks.map((task) => (
+              <BoardCard
+                key={task.id}
+                task={task}
+                onClick={() => onTaskClick(task)}
+                onMove={onMove}
+                onDelete={() => onDelete(task.id)}
+              />
+            ))}
+          </SortableContext>
 
-          {/* Inline create input */}
           {showCreate && (
             <InlineTaskCreate
               projectId={projectId}
               status={column.id}
               onDone={() => setShowCreate(false)}
+              onCreated={(t) => { onTaskCreated(t); }}
             />
           )}
 
-          {/* Empty state — click to start creating */}
           {tasks.length === 0 && !showCreate && (
             <button
               onClick={() => setShowCreate(true)}
