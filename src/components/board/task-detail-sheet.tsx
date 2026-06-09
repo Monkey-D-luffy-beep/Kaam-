@@ -21,6 +21,7 @@ import {
 import { Trash2, Save, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { toast } from 'sonner'
 import { EffortBadge, ApprovalBadge } from '@/components/shared/effort-badge'
+import { SubtaskSection } from '@/components/board/subtask-section'
 
 interface BoardMember {
   user_id: string
@@ -248,6 +249,11 @@ export function TaskDetailSheet({ task, projectId, members, currentUserId, open,
             </Button>
           </div>
         </form>
+
+        <Separator className="my-4" />
+
+        {/* Subtask scoring */}
+        <SubtaskSection taskId={task.id} />
 
         <Separator className="my-4" />
         <div className="text-xs text-muted-foreground">
