@@ -5,7 +5,6 @@ import { format } from 'date-fns'
 import { Plus } from 'lucide-react'
 import type { Project, TaskWithAssignee, Profile, MemberRole } from '@/types'
 import type { TaskStatus } from '@/types'
-import { PRIORITY_CONFIG } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { createTask, deleteTask } from '@/actions/tasks'
 import { useRealtimeTasks } from '@/hooks/use-realtime-tasks'
@@ -26,29 +25,22 @@ interface TableViewProps {
   currentUserId: string
 }
 
-const STATUS_STYLES: Record<TaskStatus, { label: string; className: string }> = {
-  todo:        { label: 'To Do',       className: 'bg-slate-100 text-slate-600 border-slate-200' },
-  in_progress: { label: 'In Progress', className: 'bg-blue-50 text-blue-600 border-blue-200' },
-  done:        { label: 'Done',        className: 'bg-green-50 text-green-600 border-green-200' },
+const STATUS_CONFIG: Record<TaskStatus, { label: string; dot: string; text: string }> = {
+  todo:        { label: 'To Do',       dot: 'bg-slate-400',  text: 'text-slate-500' },
+  in_progress: { label: 'In Progress', dot: 'bg-blue-400',   text: 'text-blue-500'  },
+  done:        { label: 'Done',        dot: 'bg-green-400',  text: 'text-green-500' },
 }
 
-const PRIORITY_STYLES: Record<string, string> = {
-  low:    'bg-slate-100 text-slate-500 border-slate-200',
-  medium: 'bg-amber-50 text-amber-600 border-amber-200',
-  high:   'bg-orange-50 text-orange-600 border-orange-200',
-  urgent: 'bg-red-50 text-red-600 border-red-200',
+const PRIORITY_DOT: Record<string, string> = {
+  low: 'bg-slate-300', medium: 'bg-amber-400', high: 'bg-orange-500', urgent: 'bg-red-500',
 }
 
-const EFFORT_STYLES: Record<string, { label: string; className: string }> = {
-  quick:  { label: '⚡ Quick',  className: 'bg-green-50 text-green-600 border-green-200' },
-  medium: { label: '🕐 Medium', className: 'bg-amber-50 text-amber-600 border-amber-200' },
-  large:  { label: '🔥 Large',  className: 'bg-red-50 text-red-600 border-red-200' },
+const EFFORT_LABEL: Record<string, string> = {
+  quick: '⚡ Quick', medium: '🕐 Medium', large: '🔥 Large',
 }
 
 function InlineRowCreate({
-  projectId,
-  onCreated,
-  onCancel,
+  projectId, onCreated, onCancel,
 }: {
   projectId: string
   onCreated: (task: Partial<TaskWithAssignee> & { id: string; title: string; status: TaskStatus }) => void
@@ -76,8 +68,10 @@ function InlineRowCreate({
   }
 
   return (
-    <tr className="border-b bg-[#4F46E5]/5">
-      <td className="w-8 px-3 py-2"><Plus className="h-3.5 w-3.5 text-[#4F46E5]" /></td>
+    <tr className="border-b border-[#E8E8E5]">
+      <td className="w-8 pl-4 pr-2 py-2">
+        <Plus className="h-3.5 w-3.5 text-[#4F46E5]" />
+      </td>
       <td className="px-3 py-2" colSpan={6}>
         <input
           ref={inputRef}
@@ -88,8 +82,8 @@ function InlineRowCreate({
             if (e.key === 'Escape') onCancel()
           }}
           onBlur={() => { if (!title.trim()) onCancel() }}
-          placeholder="Task name… (↵ to add, Esc to cancel)"
-          className="w-full text-sm outline-none bg-transparent placeholder:text-muted-foreground"
+          placeholder="New task… (↵ to add)"
+          className="w-full text-sm outline-none bg-transparent placeholder:text-[#CCC] text-[#1A1A1A]"
         />
       </td>
     </tr>
@@ -115,46 +109,27 @@ export function TableView({ project, tasks: initialTasks, members, currentUserId
     setTasks(prev => [...prev, { ...task, position: prev.length } as TaskWithAssignee])
   }
 
-  async function handleDelete(taskId: string) {
-    setTasks(prev => prev.filter(t => t.id !== taskId))
-    startTransition(async () => {
-      const result = await deleteTask(taskId, project.id)
-      if (!result.success) { setTasks(initialTasks); toast.error(result.message) }
-    })
-  }
-
   return (
-    <div className="flex flex-col h-full overflow-auto">
-      <div className="min-w-[700px]">
-        <table className="w-full border-collapse text-sm">
-          {/* Header */}
+    <div className="flex flex-col h-full bg-white overflow-auto">
+      <div className="min-w-[680px] max-w-5xl mx-auto w-full px-8 pt-6">
+
+        {/* Header */}
+        <table className="w-full border-collapse">
           <thead>
-            <tr className="border-b bg-muted/50">
-              <th className="w-8 px-3 py-2.5" />
-              <th className="px-3 py-2.5 text-left font-medium text-muted-foreground text-xs tracking-wide">
-                Task name
-              </th>
-              <th className="w-32 px-3 py-2.5 text-left font-medium text-muted-foreground text-xs tracking-wide">
-                Status
-              </th>
-              <th className="w-28 px-3 py-2.5 text-left font-medium text-muted-foreground text-xs tracking-wide">
-                Priority
-              </th>
-              <th className="w-28 px-3 py-2.5 text-left font-medium text-muted-foreground text-xs tracking-wide">
-                Effort
-              </th>
-              <th className="w-28 px-3 py-2.5 text-left font-medium text-muted-foreground text-xs tracking-wide">
-                Due date
-              </th>
-              <th className="w-10 px-3 py-2.5" />
+            <tr className="border-b border-[#E8E8E5]">
+              <th className="w-8 pl-4 pr-2 py-2" />
+              <th className="px-3 py-2 text-left text-[11px] font-medium text-[#999] tracking-wide uppercase">Task</th>
+              <th className="w-32 px-3 py-2 text-left text-[11px] font-medium text-[#999] tracking-wide uppercase">Status</th>
+              <th className="w-24 px-3 py-2 text-left text-[11px] font-medium text-[#999] tracking-wide uppercase">Priority</th>
+              <th className="w-24 px-3 py-2 text-left text-[11px] font-medium text-[#999] tracking-wide uppercase">Effort</th>
+              <th className="w-28 px-3 py-2 text-left text-[11px] font-medium text-[#999] tracking-wide uppercase">Due</th>
+              <th className="w-10 px-3 py-2" />
             </tr>
           </thead>
 
           <tbody>
-            {tasks.map((task) => {
-              const status = STATUS_STYLES[task.status]
-              const priority = PRIORITY_CONFIG[task.priority]
-              const effort = EFFORT_STYLES[task.effort ?? 'medium']
+            {tasks.map(task => {
+              const status = STATUS_CONFIG[task.status]
               const dueDate = task.due_date ? new Date(task.due_date) : null
               const isTemp = task.id.startsWith('temp-')
 
@@ -163,59 +138,54 @@ export function TableView({ project, tasks: initialTasks, members, currentUserId
                   key={task.id}
                   onClick={() => !isTemp && setSelectedTask(task)}
                   className={cn(
-                    'border-b transition-colors group',
-                    isTemp ? 'opacity-50' : 'cursor-pointer hover:bg-muted/40'
+                    'border-b border-[#E8E8E5] group',
+                    isTemp ? 'opacity-40' : 'cursor-pointer hover:bg-[#F7F6F5]',
                   )}
                 >
-                  {/* Row indicator */}
-                  <td className="w-8 px-3 py-2.5">
-                    <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground/20 group-hover:bg-[#4F46E5]/40 transition-colors" />
+                  {/* indicator */}
+                  <td className="w-8 pl-4 pr-2 py-2.5">
+                    <span className={cn('block h-1.5 w-1.5 rounded-full', PRIORITY_DOT[task.priority ?? 'medium'])} />
                   </td>
 
                   {/* Task name */}
                   <td className="px-3 py-2.5">
-                    <span className="font-medium text-[#111]">{task.title}</span>
+                    <span className="text-[13.5px] text-[#1A1A1A] font-medium">{task.title}</span>
                     {task.description && (
-                      <span className="ml-2 text-xs text-muted-foreground line-clamp-1 hidden sm:inline">
-                        {task.description}
-                      </span>
+                      <span className="ml-2 text-xs text-[#BBB] line-clamp-1 hidden sm:inline">{task.description}</span>
                     )}
                   </td>
 
                   {/* Status */}
                   <td className="px-3 py-2.5">
-                    <span className={cn('inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium', status.className)}>
-                      {status.label}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', status.dot)} />
+                      <span className={cn('text-[12px]', status.text)}>{status.label}</span>
+                    </div>
                   </td>
 
                   {/* Priority */}
                   <td className="px-3 py-2.5">
-                    <span className={cn('inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium capitalize', PRIORITY_STYLES[task.priority])}>
-                      {task.priority}
-                    </span>
+                    <span className="text-[12px] text-[#999] capitalize">{task.priority}</span>
                   </td>
 
                   {/* Effort */}
                   <td className="px-3 py-2.5">
-                    {task.effort && (
-                      <span className={cn('inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium', effort.className)}>
-                        {effort.label}
-                      </span>
-                    )}
+                    <span className="text-[12px] text-[#999]">{EFFORT_LABEL[task.effort ?? 'medium']}</span>
                   </td>
 
                   {/* Due date */}
-                  <td className="px-3 py-2.5 text-xs text-muted-foreground">
-                    {dueDate ? format(dueDate, 'MMM d, yyyy') : '—'}
+                  <td className="px-3 py-2.5">
+                    <span className="text-[12px] text-[#BBB]">
+                      {dueDate ? format(dueDate, 'MMM d') : '—'}
+                    </span>
                   </td>
 
                   {/* Assignee */}
                   <td className="px-3 py-2.5">
                     {task.assignee && (
-                      <Avatar className="h-6 w-6">
+                      <Avatar className="h-5 w-5">
                         <AvatarImage src={(task.assignee as any).avatar_url ?? ''} />
-                        <AvatarFallback className="text-[9px]">
+                        <AvatarFallback className="text-[9px] bg-[#E8E8E5] text-[#666]">
                           {((task.assignee as any).full_name ?? 'U').slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
@@ -225,22 +195,21 @@ export function TableView({ project, tasks: initialTasks, members, currentUserId
               )
             })}
 
-            {/* Inline create row */}
             {showCreate && (
               <InlineRowCreate
                 projectId={project.id}
-                onCreated={(t) => { handleTaskCreated(t) }}
+                onCreated={t => { handleTaskCreated(t) }}
                 onCancel={() => setShowCreate(false)}
               />
             )}
           </tbody>
         </table>
 
-        {/* Add task footer */}
+        {/* Add task */}
         {!showCreate && (
           <button
             onClick={() => setShowCreate(true)}
-            className="flex w-full items-center gap-2 px-6 py-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors border-b"
+            className="flex items-center gap-2 mt-1 px-4 py-2 text-[12px] text-[#BBB] hover:text-[#37352F] hover:bg-[#F7F6F5] rounded transition-colors w-full"
           >
             <Plus className="h-3.5 w-3.5" />
             New task

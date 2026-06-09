@@ -6,7 +6,6 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import type { TaskStatus, TaskWithAssignee } from '@/types'
 import { cn } from '@/lib/utils'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Badge } from '@/components/ui/badge'
 import { Plus } from 'lucide-react'
 import { BoardCard } from '@/components/board/board-card'
 import { createTask } from '@/actions/tasks'
@@ -22,17 +21,14 @@ interface BoardColumnProps {
   onTaskCreated: (task: Partial<TaskWithAssignee> & { id: string; title: string; status: TaskStatus }) => void
 }
 
-const COLUMN_STYLES: Record<TaskStatus, { border: string; bg: string }> = {
-  todo:        { border: 'border-t-slate-400',  bg: '' },
-  in_progress: { border: 'border-t-blue-500',   bg: '' },
-  done:        { border: 'border-t-green-500',  bg: '' },
+const STATUS_DOT: Record<TaskStatus, string> = {
+  todo:        'bg-slate-400',
+  in_progress: 'bg-blue-400',
+  done:        'bg-green-400',
 }
 
 function InlineTaskCreate({
-  projectId,
-  status,
-  onDone,
-  onCreated,
+  projectId, status, onDone, onCreated,
 }: {
   projectId: string
   status: TaskStatus
@@ -40,7 +36,7 @@ function InlineTaskCreate({
   onCreated: (task: Partial<TaskWithAssignee> & { id: string; title: string; status: TaskStatus }) => void
 }) {
   const [title, setTitle] = useState('')
-  const [pending, startTransition] = useTransition()
+  const [, startTransition] = useTransition()
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { inputRef.current?.focus() }, [])
@@ -48,9 +44,7 @@ function InlineTaskCreate({
   function submit() {
     const trimmed = title.trim()
     if (!trimmed) return
-    // Optimistic: show immediately with temp id
-    const tempId = `temp-${Date.now()}`
-    onCreated({ id: tempId, title: trimmed, status })
+    onCreated({ id: `temp-${Date.now()}`, title: trimmed, status })
     setTitle('')
     const fd = new FormData()
     fd.set('title', trimmed)
@@ -59,75 +53,59 @@ function InlineTaskCreate({
     startTransition(async () => {
       const result = await createTask(undefined, fd)
       if (!result.success) toast.error(result.message ?? 'Failed to create task')
-      // Realtime will replace the temp task with the real one
     })
   }
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Escape') { onDone(); return }
-    if (e.key === 'Enter') { e.preventDefault(); submit() }
-  }
-
   return (
-    <div className="rounded-lg border bg-card p-2.5 shadow-sm ring-1 ring-[#4F46E5]/25">
+    <div className="bg-white rounded-md border border-[#4F46E5]/30 px-3 py-2 shadow-[0_0_0_2px_rgba(79,70,229,0.08)]">
       <input
         ref={inputRef}
         value={title}
         onChange={e => setTitle(e.target.value)}
-        onKeyDown={handleKeyDown}
+        onKeyDown={e => {
+          if (e.key === 'Escape') { onDone(); return }
+          if (e.key === 'Enter') { e.preventDefault(); submit() }
+        }}
         onBlur={() => { if (!title.trim()) onDone() }}
         placeholder="Task name…"
-        disabled={pending}
-        className="w-full text-sm outline-none bg-transparent placeholder:text-muted-foreground disabled:opacity-50"
+        className="w-full text-[13.5px] outline-none bg-transparent placeholder:text-[#BBB] text-[#1A1A1A]"
       />
-      <p className="mt-1.5 text-[10px] text-muted-foreground select-none">
-        ↵ to add · Esc to cancel
-      </p>
+      <p className="mt-1 text-[10px] text-[#CCC] select-none">↵ add · Esc cancel</p>
     </div>
   )
 }
 
 export function BoardColumn({
-  column,
-  tasks,
-  projectId,
-  onTaskClick,
-  onMove,
-  onDelete,
-  onTaskCreated,
+  column, tasks, projectId, onTaskClick, onMove, onDelete, onTaskCreated,
 }: BoardColumnProps) {
   const [showCreate, setShowCreate] = useState(false)
   const { setNodeRef, isOver } = useDroppable({ id: column.id })
 
   return (
-    <div
-      className={cn(
-        'flex w-72 shrink-0 flex-col rounded-xl border bg-muted/40 border-t-2 transition-colors',
-        COLUMN_STYLES[column.id].border,
-        isOver && 'bg-muted/70 border-[#4F46E5]/30'
-      )}
-    >
+    <div className={cn(
+      'flex w-[272px] shrink-0 flex-col rounded-xl transition-colors',
+      'bg-[#F7F6F5]',
+      isOver && 'bg-[#EEEDF0]'
+    )}>
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2.5">
+      <div className="flex items-center justify-between px-3 pt-3 pb-2">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">{column.label}</span>
-          <Badge variant="secondary" className="h-5 min-w-5 justify-center text-xs px-1.5">
-            {tasks.length}
-          </Badge>
+          <span className={cn('h-2 w-2 rounded-full', STATUS_DOT[column.id])} />
+          <span className="text-[13px] font-semibold text-[#37352F]">{column.label}</span>
+          <span className="text-[12px] text-[#999] font-normal">{tasks.length}</span>
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="flex h-6 w-6 items-center justify-center rounded hover:bg-accent transition-colors"
-          title={`Add task to ${column.label}`}
+          className="flex h-6 w-6 items-center justify-center rounded-md hover:bg-[#ECEAE8] text-[#999] hover:text-[#37352F] transition-colors"
         >
           <Plus className="h-3.5 w-3.5" />
         </button>
       </div>
 
       <ScrollArea className="flex-1">
-        <div ref={setNodeRef} className="flex flex-col gap-2 p-2 min-h-[40px]">
+        <div ref={setNodeRef} className="flex flex-col gap-1.5 px-2 pb-2 min-h-[60px]">
           <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-            {tasks.map((task) => (
+            {tasks.map(task => (
               <BoardCard
                 key={task.id}
                 task={task}
@@ -143,16 +121,17 @@ export function BoardColumn({
               projectId={projectId}
               status={column.id}
               onDone={() => setShowCreate(false)}
-              onCreated={(t) => { onTaskCreated(t); }}
+              onCreated={t => { onTaskCreated(t) }}
             />
           )}
 
-          {tasks.length === 0 && !showCreate && (
+          {/* Add task button — always visible at bottom */}
+          {!showCreate && (
             <button
               onClick={() => setShowCreate(true)}
-              className="flex items-center justify-center gap-1.5 rounded-lg border border-dashed p-3 text-xs text-muted-foreground hover:border-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1.5 px-1.5 py-1 rounded text-[12px] text-[#AAA] hover:text-[#37352F] hover:bg-[#ECEAE8] transition-colors w-full"
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="h-3 w-3" />
               Add task
             </button>
           )}

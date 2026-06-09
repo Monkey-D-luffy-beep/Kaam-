@@ -118,7 +118,7 @@ export function BoardView({ project, tasks: initialTasks, members, currentUserId
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex h-full gap-4 overflow-x-auto p-4 sm:p-6">
+      <div className="flex h-full gap-3 overflow-x-auto p-5 bg-white">
         {BOARD_COLUMNS.map(col => (
           <BoardColumn
             key={col.id}
